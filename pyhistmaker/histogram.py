@@ -1,6 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
+from typing import List
 
 
 @dataclass
@@ -18,6 +19,9 @@ class Histogram:
     def __add__(self, other):
         return self.counts + other.counts
 
+    def __repr__(self):
+        return f"Histogram(name={self.name}, N={np.sum(self.counts)})"
+
     def plot(self, ax=None, **kwargs):
         if ax is None:
             fig, ax = plt.subplots()
@@ -26,3 +30,7 @@ class Histogram:
         ax.set_xlabel(self.name)
 
         return ax
+
+@dataclass
+class HistogramCollection:
+    histograms: List(Histogram)

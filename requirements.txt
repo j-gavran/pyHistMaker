@@ -1,0 +1,5 @@
+# numeric
+numpy>=1.19.5
+
+# plotting
+matplotlib>=3.3.4
