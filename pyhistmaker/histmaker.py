@@ -1,5 +1,5 @@
 import numpy as np
-from pyhistmaker.histogram import Histogram
+from .histogram import Histogram
 
 
 class HistMaker:

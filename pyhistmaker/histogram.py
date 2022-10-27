@@ -33,4 +33,4 @@ class Histogram:
 
 @dataclass
 class HistogramCollection:
-    histograms: List(Histogram)
+    histograms: List[Histogram]
