@@ -35,17 +35,21 @@ class Histogram:
 class HistogramCollection:
     histograms: List[Histogram]
 
+    def _plot_placement(self, n):
+        a = int(np.sqrt(n))
+        b = n - a**2
+        if b != 0:
+            c = a + 1
+        else:
+            c = a
+        sizes = (c, a)
+        return sizes
+
     def plot(self, axs=None, sizes=None, figsize=None, **kwargs):
         n = len(self.histograms[0])
         if axs is None:
             if sizes is None:
-                a = int(np.sqrt(n))
-                b = n - a**2
-                if b != 0:
-                    c = a + 1
-                else:
-                    c = a
-                sizes = (c, a)
+                sizes = self._plot_placement(n)
 
             fig, axs = plt.subplots(*sizes, figsize=figsize)
 
