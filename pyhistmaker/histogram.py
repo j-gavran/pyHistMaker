@@ -34,3 +34,25 @@ class Histogram:
 @dataclass
 class HistogramCollection:
     histograms: List[Histogram]
+
+    def plot(self, axs=None, sizes=None, figsize=None, **kwargs):
+        n = len(self.histograms[0])
+        if axs is None:
+            if sizes is None:
+                a = int(np.sqrt(n))
+                b = n - a**2
+                if b != 0:
+                    c = a + 1
+                else:
+                    c = a
+                sizes = (c, a)
+
+            fig, axs = plt.subplots(*sizes, figsize=figsize)
+
+        axs = axs.flatten()
+
+        for row in self.histograms:
+            for hist, ax in zip(row, axs):
+                hist.plot(ax, **kwargs)
+
+        return axs    

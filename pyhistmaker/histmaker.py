@@ -1,5 +1,5 @@
 import numpy as np
-from .histogram import Histogram
+from .histogram import Histogram, HistogramCollection
 
 
 class HistMaker:
@@ -93,8 +93,8 @@ class HistMaker:
             if not any(isinstance(el, list) for el in bin_range):
                 bin_range = [bin_range] * n_features
 
-        hists_lst = []
-        for data in self.data:
+        hists_lst = [[] for _ in range(len(self.data))]
+        for i, data in enumerate(self.data):
             for feature in range(n_features):
                 feature_data = data[:, feature]
                 bin_edge_data = combined_sample[:, feature]
@@ -105,9 +105,12 @@ class HistMaker:
                 hist = np.histogram(feature_data, bins=bin_edges, range=hist_bin_range, density=self.density)
 
                 h_obj = Histogram(self.var_names[feature] if self.var_names is not None else f"hist_{feature}", hist[1], hist[0])
-                hists_lst.append(h_obj)
+                hists_lst[i].append(h_obj)
         
-        return hists_lst
+        if len(hists_lst[0]) > 1:
+            return HistogramCollection(hists_lst)
+        else:
+            return hists_lst[0][0]
 
     def __call__(self, *args, **kwargs):
         return self.make(*args, **kwargs)
@@ -116,19 +119,28 @@ class HistMaker:
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    # test case 1
+    # test case 1 - multiple histograms
     data = np.random.randn(500, 5)
     h = HistMaker(data)
     hists = h()
     print(hists)
-    for h_ in hists:
-        h_.plot(lw=2, fill=False)
-        plt.show()
+    hists.plot()
+    plt.show()
 
-    # test case 2
+    # test case 2 - list of multiple histograms
     data1 = np.random.randn(500, 5)
     data2 = np.random.randn(500, 5)
     data = [data1, data2]
     h = HistMaker(data, n_bins=20)
     hists = h()
+    hists.plot()
+    plt.show()
     print(hists)
+
+    # test case 3 - single histogram
+    data = np.random.randn(500)
+    h = HistMaker(data)
+    hists = h()
+    print(hists)
+    hists.plot()
+    plt.show()
