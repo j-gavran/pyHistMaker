@@ -63,7 +63,10 @@ class HistogramCollectionBase:
             for hist, ax in zip(row, axs):
                 hist.plot(ax, **kwargs)
 
-        return axs
+        if len(axs) == 1:
+            return axs[0]
+        else:
+            return axs
     
 
 @dataclass

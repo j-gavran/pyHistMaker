@@ -128,9 +128,9 @@ if __name__ == "__main__":
     plt.show()
 
     # test case 2 - list of multiple histograms
-    data1 = np.random.randn(500, 5)
-    data2 = np.random.randn(500, 5)
-    data = [data1, data2]
+    sig = np.random.randn(500, 5)
+    bkg = np.random.randn(500, 5)
+    data = [sig, bkg]
     h = HistMaker(data, n_bins=20)
     hists = h()
     print(hists)
@@ -140,7 +140,8 @@ if __name__ == "__main__":
     # test case 2.1 - get histogram by name
     hists_0 = hists["hist_0"]
     print(hists_0)
-    hists_0.plot()
+    ax = hists_0.plot()
+    ax.legend(["sig", "bkg"])
     plt.show()
     
     # test case 3 - single histogram
