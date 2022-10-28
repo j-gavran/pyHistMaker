@@ -31,8 +31,9 @@ class Histogram:
 
         return ax
 
+
 @dataclass
-class HistogramCollection:
+class HistogramCollectionBase:
     histograms: List[Histogram]
 
     def _plot_placement(self, n):
@@ -53,10 +54,31 @@ class HistogramCollection:
 
             fig, axs = plt.subplots(*sizes, figsize=figsize)
 
-        axs = axs.flatten()
+        try:
+            axs = axs.flatten()
+        except AttributeError:
+            axs = [axs]
 
         for row in self.histograms:
             for hist, ax in zip(row, axs):
                 hist.plot(ax, **kwargs)
 
-        return axs    
+        return axs
+    
+
+@dataclass
+class HistogramCollection(HistogramCollectionBase):
+
+    def __getitem__(self, item):
+        assert type(item) is str
+        var_hists = []
+
+        for hists in self.histograms:
+            for hist in hists:
+                if hist.name == item:
+                    var_hists.append(hist)
+        
+        if len(var_hists) == 0:
+            raise ValueError
+
+        return HistogramCollectionBase([[var] for var in var_hists])

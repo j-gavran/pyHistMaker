@@ -133,10 +133,16 @@ if __name__ == "__main__":
     data = [data1, data2]
     h = HistMaker(data, n_bins=20)
     hists = h()
+    print(hists)
     hists.plot()
     plt.show()
-    print(hists)
-
+    
+    # test case 2.1 - get histogram by name
+    hists_0 = hists["hist_0"]
+    print(hists_0)
+    hists_0.plot()
+    plt.show()
+    
     # test case 3 - single histogram
     data = np.random.randn(500)
     h = HistMaker(data)
@@ -144,3 +150,4 @@ if __name__ == "__main__":
     print(hists)
     hists.plot()
     plt.show()
+    
