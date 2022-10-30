@@ -1,14 +1,23 @@
 import numpy as np
-from dataclasses import dataclass
 import matplotlib.pyplot as plt
-from typing import List
+import pandas as pd
 
 
-@dataclass
 class Histogram:
-    name: str
-    edges: np.array
-    counts: np.array
+    def __init__(self, name, edges, counts):
+        self.name = name
+        self.edges = edges
+        self.hist = self._counstruct_df(name, counts)
+
+    @staticmethod
+    def _counstruct_df(name, counts):
+        df = pd.DataFrame([counts], columns=[f"bin{i}" for i in range(len(counts))])
+        df.insert(0, "name", name)
+        return df
+
+    @property
+    def counts(self):
+        return self.hist.iloc[0].to_numpy()[1:].astype(int)
 
     def __eq__(self, other):
         return (self.counts == other.counts).all()
@@ -19,26 +28,40 @@ class Histogram:
     def __add__(self, other):
         return self.counts + other.counts
 
+    def __call__(self, *args, **kwargs):
+        return self.hist
+
     def __repr__(self):
         return f"Histogram(name={self.name}, N={np.sum(self.counts)})"
 
     def plot(self, ax=None, **kwargs):
         if ax is None:
             fig, ax = plt.subplots()
-        
+
         ax.stairs(self.counts, self.edges, **kwargs)
         ax.set_xlabel(self.name)
 
         return ax
 
 
-@dataclass
 class HistogramCollectionBase:
-    histograms: List[Histogram]
+    def __init__(self, histograms):
+        self.histograms = histograms
+        self.hist = self._construct_df(histograms)
+
+    @staticmethod
+    def _construct_df(histograms):
+        hists = []
+        for hist in histograms:
+            df = pd.concat([h() for h in hist])
+            df.reset_index(drop=True, inplace=True)
+            hists.append(df)
+
+        return hists
 
     def _plot_placement(self, n):
         a = int(np.sqrt(n))
-        b = n - a**2
+        b = n - a ** 2
         if b != 0:
             c = a + 1
         else:
@@ -67,11 +90,15 @@ class HistogramCollectionBase:
             return axs[0]
         else:
             return axs
-    
 
-@dataclass
+    def __call__(self, *args, **kwargs):
+        if len(self.hist) == 1:
+            return self.hist[0]
+        else:
+            return self.hist
+
+
 class HistogramCollection(HistogramCollectionBase):
-
     def __getitem__(self, item):
         assert type(item) is str
         var_hists = []
@@ -80,8 +107,16 @@ class HistogramCollection(HistogramCollectionBase):
             for hist in hists:
                 if hist.name == item:
                     var_hists.append(hist)
-        
+
         if len(var_hists) == 0:
             raise ValueError
 
         return HistogramCollectionBase([[var] for var in var_hists])
+
+    def __repr__(self):
+        repr_str = ""
+
+        for i, h in enumerate(self.histograms):
+            repr_str += f"{i}: {h.__repr__()} \n"
+
+        return repr_str

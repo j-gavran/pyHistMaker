@@ -9,15 +9,15 @@ class HistMaker:
         Parameters
         ----------
         data : list or array
-            Data to be histogrammed. If list then [data0, ..., dataN]. Arrays can be 1d (one histogram) or 2d 
+            Data to be histogrammed. If list then [data0, ..., dataN]. Arrays can be 1d (one histogram) or 2d
             (multiple histograms). If a list of data is given then same features will be combined for bin edge calculation.
         n_bins : int, str or array, optional
             Number of bins, see [1]. By default "auto".
         bin_range : list or list of lists, optional
             If list [lower, upper] use for all data else specify [[lower0, upper0], ..., [lowerN, upperN]] for each histogram.
-        density: bool, optional
+        density : bool, optional
             If True return prob. density.
-        var_names: list of str, optional
+        var_names : list of str, optional
             Names of histogrammed distributions.
 
         References
@@ -25,7 +25,7 @@ class HistMaker:
         [1] - https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html
 
         """
-        self.data = data 
+        self.data = data
         self.n_bins = n_bins
         self.bin_range = bin_range
         self.density = density
@@ -47,7 +47,7 @@ class HistMaker:
                 raise ValueError
             else:
                 shape_0 = shape_1
-        
+
         return True
 
     def _combine_data(self):
@@ -55,7 +55,7 @@ class HistMaker:
 
         Note
         ----
-        If self.data is an array then redefine it as a list of len 1 that holds the specified array. Also make the 1d 
+        If self.data is an array then redefine it as a list of len 1 that holds the specified array. Also make the 1d
         array a column of size (N, 1).
 
         Returns
@@ -69,13 +69,13 @@ class HistMaker:
         else:
             if len(self.data.shape) == 1:
                 self.data = self.data[:, None]
-            
+
             self.data = [self.data]
             combined_sample = self.data[0]
 
         return combined_sample
 
-    def make(self):
+    def make(self, **kwargs):
         """Make histograms.
 
         Returns
@@ -94,6 +94,7 @@ class HistMaker:
                 bin_range = [bin_range] * n_features
 
         hists_lst = [[] for _ in range(len(self.data))]
+
         for i, data in enumerate(self.data):
             for feature in range(n_features):
                 feature_data = data[:, feature]
@@ -102,11 +103,13 @@ class HistMaker:
                 hist_bin_range = bin_range[feature] if bin_range else None
 
                 bin_edges = np.histogram_bin_edges(bin_edge_data, bins=self.n_bins, range=hist_bin_range)
-                hist = np.histogram(feature_data, bins=bin_edges, range=hist_bin_range, density=self.density)
+                hist = np.histogram(feature_data, bins=bin_edges, range=hist_bin_range, density=self.density, **kwargs)
 
-                h_obj = Histogram(self.var_names[feature] if self.var_names is not None else f"hist_{feature}", hist[1], hist[0])
+                h_obj = Histogram(
+                    self.var_names[feature] if self.var_names is not None else f"hist_{feature}", hist[1], hist[0]
+                )
                 hists_lst[i].append(h_obj)
-        
+
         if len(hists_lst[0]) > 1:
             return HistogramCollection(hists_lst)
         else:
@@ -136,14 +139,14 @@ if __name__ == "__main__":
     print(hists)
     hists.plot()
     plt.show()
-    
+
     # test case 2.1 - get histogram by name
     hists_0 = hists["hist_0"]
     print(hists_0)
     ax = hists_0.plot()
     ax.legend(["sig", "bkg"])
     plt.show()
-    
+
     # test case 3 - single histogram
     data = np.random.randn(500)
     h = HistMaker(data)
@@ -151,4 +154,3 @@ if __name__ == "__main__":
     print(hists)
     hists.plot()
     plt.show()
-    
