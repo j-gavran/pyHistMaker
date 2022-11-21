@@ -7,7 +7,7 @@ class Histogram:
     def __init__(self, name, edges, counts):
         self.name = name
         self.edges = edges
-        self.hist = self._counstruct_df(name, counts)
+        self.hist_df = self._counstruct_df(name, counts)
 
     @staticmethod
     def _counstruct_df(name, counts):
@@ -17,7 +17,7 @@ class Histogram:
 
     @property
     def counts(self):
-        return self.hist.iloc[0].to_numpy()[1:].astype(int)
+        return self.hist_df.iloc[0].to_numpy()[1:].astype(int)
 
     def __eq__(self, other):
         return (self.counts == other.counts).all()
@@ -29,7 +29,7 @@ class Histogram:
         return self.counts + other.counts
 
     def __call__(self, *args, **kwargs):
-        return self.hist
+        return self.hist_df
 
     def __repr__(self):
         return f"Histogram(name={self.name}, N={np.sum(self.counts)})"
@@ -46,18 +46,18 @@ class Histogram:
 
 class HistogramCollectionBase:
     def __init__(self, histograms):
-        self.histograms = histograms
-        self.hist = self._construct_df(histograms)
+        self.histogram_collection = histograms
+        self.hist_df_collection = self._construct_df(histograms)
 
     @staticmethod
     def _construct_df(histograms):
-        hists = []
+        hist_collection = []
         for hist in histograms:
             df = pd.concat([h() for h in hist])
             df.reset_index(drop=True, inplace=True)
-            hists.append(df)
+            hist_collection.append(df)
 
-        return hists
+        return hist_collection
 
     def _plot_placement(self, n):
         a = int(np.sqrt(n))
@@ -70,7 +70,7 @@ class HistogramCollectionBase:
         return sizes
 
     def plot(self, axs=None, sizes=None, figsize=None, **kwargs):
-        n = len(self.histograms[0])
+        n = len(self.histogram_collection[0])
         if axs is None:
             if sizes is None:
                 sizes = self._plot_placement(n)
@@ -82,7 +82,7 @@ class HistogramCollectionBase:
         except AttributeError:
             axs = [axs]
 
-        for row in self.histograms:
+        for row in self.histogram_collection:
             for hist, ax in zip(row, axs):
                 hist.plot(ax, **kwargs)
 
@@ -92,10 +92,10 @@ class HistogramCollectionBase:
             return axs
 
     def __call__(self, *args, **kwargs):
-        if len(self.hist) == 1:
-            return self.hist[0]
+        if len(self.hist_df_collection) == 1:
+            return self.hist_df_collection[0]
         else:
-            return self.hist
+            return self.hist_df_collection
 
 
 class HistogramCollection(HistogramCollectionBase):
@@ -103,7 +103,7 @@ class HistogramCollection(HistogramCollectionBase):
         assert type(item) is str
         var_hists = []
 
-        for hists in self.histograms:
+        for hists in self.histogram_collection:
             for hist in hists:
                 if hist.name == item:
                     var_hists.append(hist)
@@ -116,7 +116,7 @@ class HistogramCollection(HistogramCollectionBase):
     def __repr__(self):
         repr_str = ""
 
-        for i, h in enumerate(self.histograms):
+        for i, h in enumerate(self.histogram_collection):
             repr_str += f"{i}: {h.__repr__()} \n"
 
         return repr_str
