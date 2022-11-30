@@ -7,6 +7,8 @@ class UprootReader:
     def __init__(self, file_path, **kwargs):
         """Wrapper for uproot.open.
 
+        https://uproot.readthedocs.io/en/latest/uproot.reading.ReadOnlyDirectory.html
+
         Parameters
         ----------
         file_path : str
@@ -19,6 +21,9 @@ class UprootReader:
         """https://uproot.readthedocs.io/en/latest/uproot.reading.open.html"""
         ReadOnlyDirectory = uproot.open(self.file_path, **kwargs)
         return ReadOnlyDirectory
+
+    def classnames(self):
+        return self.ReadOnlyDirectory.classnames()
 
     def hist_to_numpy(self, name):
         counts, edges = self.ReadOnlyDirectory[name].to_numpy()

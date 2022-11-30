@@ -3,7 +3,7 @@ from .histogram import Histogram, HistogramCollection
 
 
 class HistMaker:
-    def __init__(self, data, n_bins="auto", bin_range=None, density=False, var_names=None):
+    def __init__(self, data, n_bins="auto", bin_range=None, density=False, var_names=None, binning_index=None):
         """Class for making histograms from raw data using numpy.
 
         Parameters
@@ -19,6 +19,8 @@ class HistMaker:
             If True return prob. density.
         var_names : list of str, optional
             Names of histogrammed distributions.
+        binning_index : list
+            Index of self.data list to use for bin edges.
 
         References
         ----------
@@ -30,6 +32,7 @@ class HistMaker:
         self.bin_range = bin_range
         self.density = density
         self.var_names = var_names
+        self.binning_index = binning_index
 
     def _validate_data_shapes(self):
         """If a list of data is given, make sure that all arrays have the same number of features.
@@ -65,7 +68,11 @@ class HistMaker:
         """
         if isinstance(self.data, list):
             self._validate_data_shapes()
-            combined_sample = np.concatenate(self.data)
+            if self.binning_index:
+                cat_data = [self.data[i] for i in self.binning_index]
+            else:
+                cat_data = self.data
+            combined_sample = np.concatenate(cat_data)
         else:
             if len(self.data.shape) == 1:
                 self.data = self.data[:, None]
